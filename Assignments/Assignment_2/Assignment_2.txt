@@ -1,0 +1,48 @@
+#Tasks 4-10
+# 4. store a list of all .csv files in Data in an object called "csv_files"
+# starting point is Assignment_2
+csv_files <- list.files(path = "../../Data", 
+           pattern = ".csv",
+           full.names = TRUE)
+
+# 5. find how many files are .csv
+length(csv_files)
+
+# 6. open the wingspan_vs_mass.csv file 
+# store the contents as an R object named "df" using the read.csv() function
+# store wingspan_vs_mass in an object called wvm
+wvm <- list.files(path = "../../Data",
+           pattern = "wingspan_vs_mass.csv",
+           full.names = TRUE)
+# read file as a csv into a data frame
+df <- read.csv(wvm)
+
+# 7. inspect first 5 lines of df using head() function
+# store first 5 lines in object called first5
+first5 <- head(df,n=5)
+
+# 8. find any files (recursively) in the Data directory 
+# that start with the letter "b" (lowercase)
+# store in object called "bfiles"
+bfiles <- list.files(path = "../../Data",
+           pattern = "^b",
+           full.names = TRUE,
+           recursive = TRUE)
+
+# 9. display the first line of each "b" file with a for-loop
+for(i in 1:3){
+  print(readLines(bfiles[i])[1])
+}
+
+# 10. Do the same for files that end in ".csv"
+# find files (recursively) in the Data directory that end with ".csv"
+# store in object "all_csv"
+all_csv <- list.files(path = "../../Data",
+           pattern = ".csv",
+           full.names = TRUE,
+          recursive = TRUE)
+
+# display first line of each ".csv" file with a for-loop
+for(i in 1:145){
+  print(readLines(all_csv[i])[1])
+}
