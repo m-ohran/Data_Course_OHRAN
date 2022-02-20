@@ -40,5 +40,5 @@ dat_long%>%
   facet_wrap(~dilution) +
   theme_minimal() +
   labs(x="Time",y="Mean absorbance",color="Sample ID") #+
-  #gganimate::transition_reveal(rev(seq_along(time)))
+  #gganimate::transition_reveal(time)
 
