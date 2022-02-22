@@ -29,19 +29,24 @@ dat_long %>%
 
 #ggsave("Assignment_6_Plot_1.pdf",width = 15,height = 10,dpi = 300)
 
-# filter by Itaconic Acid, calculate the mean absorbance of each replicate for each sample,
+# filter by Itaconic Acid, calculate the mean absorbance of all 3 replicates for each sample,
 # plot mean absorbance over time, faceted by dilution
-dat_long%>% 
-  filter(substrate == "Itaconic Acid") %>%
-  group_by(sample_id,rep,time,dilution) %>% 
+dat %>% 
+  pivot_longer(starts_with("hr_"),
+               names_to = "time",
+               values_to = "absorbance",
+               names_prefix = "hr_") %>% 
+  mutate(time = as.numeric(time)) %>% 
+  filter(substrate == "Itaconic Acid") %>% 
+  group_by(sample_id,time,dilution) %>% 
   summarise(mean_absorbance = mean(absorbance)) %>% 
-  ggplot(aes(x=time,y=mean_absorbance,color=sample_id)) +
-  geom_smooth(se=FALSE, span=0.45) + # lines are too smooth, however other geoms don't come close
+  ggplot(aes(x=time,y=mean_absorbance,color=sample_id,group=sample_id)) +
+  #geom_point()+
+  geom_line()+
   facet_wrap(~dilution) +
+  # animate plot
+  transition_reveal(time) +
   theme_minimal() +
-  # animate
-  transition_reveal(time) + # could not make this work
-  labs(x="Time",y="Mean absorbance",color="Sample ID")
+  labs(x="Time",y="Mean Absorbance",color="Sample ID")
 
-
-#ggsave("Assignment_6_Plot_2.pdf",width = 7,height=10,dpi = 300)
+#anim_save("Assignment_6_Plot_2.gif")
