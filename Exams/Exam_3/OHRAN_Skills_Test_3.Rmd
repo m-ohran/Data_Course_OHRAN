@@ -1,0 +1,118 @@
+---
+title: "Exam 3"
+author: "Marissa Ohran"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**1. Load and clean "FacultySalaries_1995.csv" and re-create graph**
+   
+    
+```{r message=FALSE, warning=FALSE}
+# Libraries
+library(tidyverse)
+library(janitor)
+library(broom)
+
+# Load dataset
+sal <- read_csv("FacultySalaries_1995.csv")
+
+# Clean names
+sal <- sal %>% clean_names()
+
+# Tidy data
+# select state, tier, and ranked salary columns
+sal_rank <- sal %>% 
+  select(state,tier,ends_with("_salary"))
+
+# pivot_longer, creating a rank column, adjust rank values
+sal_rank <-sal_rank %>% 
+  pivot_longer(cols = ends_with("_salary"),
+               names_to = "rank",
+               values_to = "salary") %>% 
+  mutate(rank=case_when(rank == "avg_full_prof_salary" ~ "Full",
+                        rank == "avg_assoc_prof_salary" ~ "Assoc",
+                        TRUE ~ "Assist"))
+
+# filter out tier VIIB
+sal_rank <- sal_rank %>% filter(tier != "VIIB")
+
+# plot
+# x = rank, y = salary, boxplot, fill = rank, facet wrap by tier
+sal_rank %>% 
+  ggplot(aes(x=rank, y=salary, fill=rank)) + 
+  geom_boxplot() +
+  facet_wrap(~tier) +
+  theme_minimal() +
+  labs(x="Rank", y="Salary",fill="Rank") +
+  theme(axis.text.x = element_text(angle = 45))
+```
+    
+    
+**2. Build an ANOVA model and display the summary output.**
+
+```{r message=FALSE, warning=FALSE}
+# ANOVA model & summary
+mod <- sal_rank %>% 
+  aov(data = .,formula = salary ~ state + tier + rank)
+summary(mod)
+```
+  
+  
+  **3. Load "Juniper_Oils.csv" data. Look at it. Then tidy it!**
+  
+```{r message=FALSE, warning=FALSE}
+# load data
+juniper <- read_csv("Juniper_Oils.csv")
+
+# look at data
+juniper %>% glimpse()
+
+# tidy data
+# select columns I care about
+juniper_df <- juniper %>% 
+  select(c("alpha-pinene","para-cymene","alpha-terpineol","cedr-9-ene","alpha-cedrene","beta-cedrene","cis-thujopsene","alpha-himachalene","beta-chamigrene","cuparene","compound 1","alpha-chamigrene","widdrol","cedrol","beta-acorenol","alpha-acorenol","gamma-eudesmol","beta-eudesmol","alpha-eudesmol","cedr-8-en-13-ol","cedr-8-en-15-ol","compound 2","thujopsenal"), YearsSinceBurn)
+
+# pivot_longer, creating ChemID column
+juniper_df <- juniper_df %>% 
+  pivot_longer(cols = c("alpha-pinene","para-cymene","alpha-terpineol","cedr-9-ene","alpha-cedrene","beta-cedrene","cis-thujopsene","alpha-himachalene","beta-chamigrene","cuparene","compound 1","alpha-chamigrene","widdrol","cedrol","beta-acorenol","alpha-acorenol","gamma-eudesmol","beta-eudesmol","alpha-eudesmol","cedr-8-en-13-ol","cedr-8-en-15-ol","compound 2","thujopsenal"),
+               names_to = "ChemID",
+               values_to = "Concentration")
+```
+  
+  
+**4. Make a graph of the following:**
+
+        x = YearsSinceBurn
+        y = Concentration
+        facet = ChemicalID (use free y-axis scales)
+        geom_smooth
+        
+```{r message=FALSE, warning=FALSE}
+# plot
+juniper_df %>% 
+  ggplot(aes(x=YearsSinceBurn,y=Concentration)) +
+  geom_smooth() +
+  facet_wrap(~ChemID, scales = "free")
+```
+
+        
+**5. Use glm to find which chemicals show concentrations that are significantly affected by "Years Since Burn".**
+```{r message=FALSE, warning=FALSE}
+#glm model
+ mod2 <- juniper_df %>% 
+ glm(data = ., formula = Concentration ~ YearsSinceBurn * ChemID)
+
+tidy <- tidy(mod2)
+
+tidy %>% 
+  filter(p.value <= 0.05) %>% 
+  mutate(term=str_remove(term, "ChemID"))
+```
+
+
+
+glm(Concentration)
